@@ -1,0 +1,33 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+skinparam actorBorderColor #1B365D
+skinparam actorFontColor #1E232D
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B365D
+skinparam usecaseFontColor #1E232D
+skinparam rectangleBorderColor #1B365D
+skinparam rectangleBackgroundColor #F8FAFC
+skinparam arrowColor #1B365D
+
+actor "User" as User
+
+rectangle "Alumni App" {
+  usecase "View Alumni Profile" as View_Alumni_Profile
+  usecase "Follow Alumni" as Follow_Alumni
+  usecase "Join Event" as Join_Event
+  usecase "Message Alumni" as Message_Alumni
+  usecase "Make Post" as Make_Post
+}
+
+actor "Alumni" as Alumni
+
+User --> View_Alumni_Profile
+Follow_Alumni <-- Alumni
+Follow_Alumni ..> View_Alumni_Profile : <<include>>
+Join_Event <-- Alumni
+Message_Alumni <-- Alumni
+Message_Alumni ..> View_Alumni_Profile : <<include>>
+Make_Post <-- Alumni
+
+@enduml

@@ -1,0 +1,33 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Alumni Directory | AlumCircle{% endblock %}
+
+{% block subpage_content %}
+<main class="alumni-directory container-fluid py-2">
+  <header class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-3">
+    <h1 class="h3 mb-0">Alumni directory</h1>
+    <form class="directory-search d-flex gap-2" method="get" action="{{ url_for('alumni_directory_view') }}">
+      <label class="visually-hidden" for="alumni-search">Search alumni</label>
+      <input class="form-control" type="search" id="alumni-search" name="q" value="{{ query }}" placeholder="Name, school, industry, or role">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+  </header>
+
+  {% if profiles %}
+  <div class="directory-results">
+    {% for profile in profiles %}
+    <article class="directory-result">
+      <h2 class="mb-1"><a href="{{ url_for('view_alumni_profile', profile_id=profile.id) }}">{{ profile.user.name }}</a></h2>
+      {% if profile.headline %}<p class="mb-1">{{ profile.headline }}</p>{% endif %}
+      <p class="text-muted mb-0">
+        {% if profile.school %}{{ profile.school }}{% endif %}
+        {% if profile.school and profile.location %} · {% endif %}
+        {% if profile.location %}{{ profile.location }}{% endif %}
+      </p>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted">No alumni profiles found.</p>
+  {% endif %}
+</main>
+{% endblock %}

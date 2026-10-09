@@ -1,0 +1,14 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Message {{ recipient.user.name }} | AlumCircle{% endblock %}
+
+{% block subpage_content %}
+<main class="message-form-page container-fluid py-2">
+  <a class="message-back-link" href="{{ url_for('view_alumni_profile', profile_id=recipient.id) }}">Back to profile</a>
+  <h1 class="h3 mt-3">Message {{ recipient.user.name }}</h1>
+  <form class="message-compose-form" method="post" action="{{ url_for('send_message', profile_id=recipient.id) }}">
+    <label class="form-label" for="profile-message-body">Message</label>
+    <textarea class="form-control mb-3" id="profile-message-body" name="body" rows="7" required></textarea>
+    <button class="btn btn-primary" type="submit">Send message</button>
+  </form>
+</main>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{% if profile %}Edit{% else %}Complete{% endif %} Alumni Profile | AlumCircle{% endblock %}
+
+{% block subpage_content %}
+<main class="profile-completion-page container-fluid py-2">
+  <header class="profile-completion-heading">
+    <p class="landing-kicker text-muted mb-1">AlumCircle community</p>
+    <h1 class="h3">{% if profile %}Edit your alumni profile{% else %}Complete your alumni profile{% endif %}</h1>
+    <p class="text-muted">Share your school, degree, and experience with fellow alumni.</p>
+  </header>
+
+  {% for message in get_flashed_messages(request) %}
+  <div class="alert alert-{{ 'danger' if message.type == 'error' else message.type }}" role="alert">{{ message.message }}</div>
+  {% endfor %}
+
+  <form class="profile-completion-form" method="post" action="{{ url_for('save_alumni_profile') }}">
+    <div class="profile-form-required">
+      <h2 class="h5">Education</h2>
+      <div class="mb-3">
+        <label class="form-label" for="school">School</label>
+        <input class="form-control" id="school" name="school" value="{{ profile.school if profile else '' }}" required>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-7">
+          <label class="form-label" for="major">Degree</label>
+          <input class="form-control" id="major" name="major" value="{{ profile.major if profile else '' }}" placeholder="e.g. BSc Computer Science" required>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label" for="graduation_year">Graduation year</label>
+          <input class="form-control" type="number" id="graduation_year" name="graduation_year" min="1900" max="2100" value="{{ profile.graduation_year if profile else '' }}" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-form-details">
+      <h2 class="h5">Professional details</h2>
+      <div class="mb-3">
+        <label class="form-label" for="headline">Headline</label>
+        <input class="form-control" id="headline" name="headline" value="{{ profile.headline if profile else '' }}" placeholder="Your role or area of work">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="bio">About</label>
+        <textarea class="form-control" id="bio" name="bio" rows="4">{{ profile.bio if profile else '' }}</textarea>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6 mb-3">
+          <label class="form-label" for="location">Location</label>
+          <input class="form-control" id="location" name="location" value="{{ profile.location if profile else '' }}">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label" for="industry">Industry</label>
+          <input class="form-control" id="industry" name="industry" value="{{ profile.industry if profile else '' }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="help_offered">How you can help fellow alumni</label>
+        <input class="form-control" id="help_offered" name="help_offered" value="{{ profile.help_offered if profile else '' }}" placeholder="e.g. Mentoring, career advice">
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-primary" type="submit">Save alumni profile</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('user_home_view') }}">Cancel</a>
+    </div>
+  </form>
+</main>
+{% endblock %}

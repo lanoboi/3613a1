@@ -1,0 +1,88 @@
+{% extends "authenticated-base.html" %}
+{% block title %}{{ profile.user.name }} | AlumCircle{% endblock %}
+{% block content_class %}profile-content{% endblock %}
+{% block content_header %}{% endblock %}
+{% block page_messages %}{% endblock %}
+
+{% block subpage_content %}
+<main class="alumni-profile">
+  <div class="profile-cover">
+    <button class="profile-menu-toggle btn" data-sidebar-toggle type="button" aria-label="Toggle navigation" aria-expanded="true" aria-controls="sidebar">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+  </div>
+  {% for message in get_flashed_messages(request) %}
+  <div class="alert alert-{{ 'danger' if message.type == 'error' else message.type }} m-3" role="alert">{{ message.message }}</div>
+  {% endfor %}
+  <header class="profile-summary">
+    <div class="profile-monogram" aria-hidden="true">{{ profile.user.name[:1]|upper }}</div>
+    <div>
+      <h1 class="h3 mb-1">{{ profile.user.name }}</h1>
+      {% if profile.headline %}<p class="mb-1">{{ profile.headline }}</p>{% endif %}
+      {% if profile.location %}<p class="small text-muted mb-0">{{ profile.location }}</p>{% endif %}
+    </div>
+    <form class="profile-follow-form" method="post" action="{{ url_for('toggle_alumni_follow', profile_id=profile.id) }}">
+      <button class="follow-toggle{% if is_following %} is-following{% endif %}" type="submit" aria-label="{% if is_following %}Unfollow {{ profile.user.name }}{% else %}Follow {{ profile.user.name }}{% endif %}">
+        {% if is_following %}
+        <span class="follow-label-default">Following</span>
+        <span class="follow-label-hover" aria-hidden="true">Unfollow</span>
+        {% else %}
+        <span>Follow</span>
+        {% endif %}
+      </button>
+    </form>
+    {% if user.id != profile.user_id %}
+    <a class="profile-message-link" href="{{ url_for('compose_message_view', profile_id=profile.id) }}">Message</a>
+    {% endif %}
+  </header>
+
+  <div class="profile-columns">
+    <div>
+      {% if profile.bio %}
+      <section class="profile-section">
+        <h2 class="h5">About</h2>
+        <p class="mb-0">{{ profile.bio }}</p>
+      </section>
+      {% endif %}
+
+      <section class="profile-section">
+        <h2 class="h5">Experience</h2>
+        {% if profile.experiences %}
+          {% for experience in profile.experiences|sort(attribute="start_date", reverse=True) %}
+          <article class="experience-entry">
+            <h3 class="mb-1">{{ experience.title }}</h3>
+            <p class="mb-1">{{ experience.employer }}</p>
+            <p class="small text-muted mb-0">
+              {{ experience.start_date.strftime("%Y") }} -
+              {% if experience.end_date %}{{ experience.end_date.strftime("%Y") }}{% else %}Present{% endif %}
+            </p>
+          </article>
+          {% endfor %}
+        {% else %}
+        <p class="text-muted mb-0">No experience listed.</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <aside>
+      <section class="profile-section">
+        <h2 class="h5">Alumni details</h2>
+        {% if profile.industry %}
+        <p class="mb-2"><span class="text-muted">Industry</span><br>{{ profile.industry }}</p>
+        {% endif %}
+        {% if profile.help_offered %}
+        <p class="mb-0"><span class="text-muted">Can help with</span><br>{{ profile.help_offered }}</p>
+        {% endif %}
+      </section>
+    </aside>
+    <aside>
+      <section class="profile-section">
+        <h2 class="h5">Education</h2>
+        <p class="mb-2"><span class="text-muted">Degree</span><br>{{ profile.major or "Not provided" }}</p>
+        {% if profile.school %}<p class="mb-2"><span class="text-muted">School</span><br>{{ profile.school }}</p>{% endif %}
+        {% if profile.graduation_year %}<p class="mb-0"><span class="text-muted">Graduation year</span><br>{{ profile.graduation_year }}</p>{% endif %}
+      </section>
+    </aside>
+  </div>
+</main>
+{% endblock %}

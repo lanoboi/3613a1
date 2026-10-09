@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}AlumCircle{% endblock %}
+
+{% block content %}
+<div class="landing">
+  <header class="landing-nav">
+    <a class="brand-wordmark" href="{{ url_for('index_view') }}">AlumCircle</a>
+    {% if user_logged_in %}
+    <div class="landing-nav-actions">
+      <a class="btn-landing btn-landing-ghost" href="{{ app_home }}">Open app</a>
+      <a class="btn-landing btn-landing-ghost" href="{{ url_for('logout') }}">Sign out</a>
+    </div>
+    {% endif %}
+  </header>
+
+  <main class="landing-hero">
+    <p class="landing-kicker">A university alumni network</p>
+    <h1 class="brand-wordmark">AlumCircle</h1>
+    <p class="landing-lead">
+      Reconnect with classmates, share what you are building, and stay close to the university community through profiles, conversations, events, and alumni updates.
+    </p>
+    <div class="landing-cta">
+      {% if user_logged_in %}
+      <a class="btn-landing btn-landing-primary" href="{{ app_home }}">Continue to app</a>
+      {% else %}
+      <a class="btn-landing btn-landing-primary" href="{{ url_for('register_view') }}">Get started</a>
+      <a class="btn-landing btn-landing-ghost" href="{{ url_for('login_view') }}">Sign in</a>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer class="landing-foot">
+    A lasting community for the people and ideas that began on campus.
+  </footer>
+</div>
+{% endblock %}

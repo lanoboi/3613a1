@@ -1,0 +1,74 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Events | AlumCircle{% endblock %}
+
+{% block subpage_content %}
+<main class="events-page container-fluid py-2">
+  <header class="events-heading mb-4">
+    <p class="landing-kicker text-muted mb-1">AlumCircle community</p>
+    <h1 class="h3 mb-1">Events</h1>
+    <p class="text-muted mb-0">Meet, learn, and reconnect with fellow alumni.</p>
+  </header>
+
+  <section class="event-section" aria-labelledby="joined-events-heading">
+    <div class="event-section-heading">
+      <h2 class="h5" id="joined-events-heading">My events</h2>
+      <span class="text-muted">{{ joined_events|length }}</span>
+    </div>
+    {% if joined_events %}
+      {% for event in joined_events %}
+      <article class="event-row joined-event-row">
+        <div class="event-date-block">
+          <span>{{ event.event_date.strftime("%b") }}</span>
+          <strong>{{ event.event_date.strftime("%d") }}</strong>
+        </div>
+        <div class="event-copy">
+          <h3>{{ event.title }}</h3>
+          <p>{{ event.description }}</p>
+          <p class="event-meta">
+            {{ event.event_date.strftime("%B %d, %Y") }} · {{ event.event_time }} · {{ event.event_format }} · {{ event.location }}
+          </p>
+        </div>
+        <form method="post" action="{{ url_for('toggle_event_attendance', event_id=event.id) }}">
+          <button class="event-action event-action-withdraw" type="submit">Withdraw</button>
+        </form>
+      </article>
+      {% endfor %}
+    {% else %}
+    <p class="event-empty">Events you join will appear here.</p>
+    {% endif %}
+  </section>
+
+  <section class="event-section" aria-labelledby="upcoming-events-heading">
+    <div class="event-section-heading">
+      <h2 class="h5" id="upcoming-events-heading">Upcoming events</h2>
+      <span class="text-muted">{{ upcoming_events|length }}</span>
+    </div>
+    {% if upcoming_events %}
+      {% for event in upcoming_events %}
+      <article class="event-row">
+        <div class="event-date-block">
+          <span>{{ event.event_date.strftime("%b") }}</span>
+          <strong>{{ event.event_date.strftime("%d") }}</strong>
+        </div>
+        <div class="event-copy">
+          <h3>{{ event.title }}</h3>
+          <p>{{ event.description }}</p>
+          <p class="event-meta">
+            {{ event.event_date.strftime("%B %d, %Y") }} · {{ event.event_time }} · {{ event.event_format }} · {{ event.location }}
+          </p>
+        </div>
+        {% if can_join %}
+        <form method="post" action="{{ url_for('toggle_event_attendance', event_id=event.id) }}">
+          <button class="event-action" type="submit">Join event</button>
+        </form>
+        {% else %}
+        <span class="event-eligibility">Alumni profiles can join</span>
+        {% endif %}
+      </article>
+      {% endfor %}
+    {% else %}
+    <p class="event-empty">No upcoming events at this time.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

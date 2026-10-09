@@ -1,0 +1,56 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Home | AlumCircle{% endblock %}
+
+{% block subpage_content %}
+<main class="home-feed container-fluid py-2">
+  <header class="feed-heading">
+    <div>
+      <p class="landing-kicker text-muted mb-1">AlumCircle community</p>
+      <h1 class="h3 mb-0">Home</h1>
+    </div>
+  </header>
+
+  {% if can_post %}
+  <form class="post-composer" method="post" action="{{ url_for('create_post') }}">
+    <label class="visually-hidden" for="post-body">Share a post</label>
+    <textarea id="post-body" name="body" rows="2" placeholder="Share an update with your alumni community..." required></textarea>
+    <button class="btn btn-primary" type="submit">Post</button>
+  </form>
+  {% else %}
+  <section class="feed-alumni-note">
+    <h2 class="h5">Join the alumni community</h2>
+    <p>Complete your education and profile details to publish posts and appear in the alumni directory.</p>
+    <a class="btn btn-primary" href="{{ url_for('alumni_profile_form_view') }}">Complete alumni profile</a>
+  </section>
+  {% endif %}
+
+  <div class="feed-layout">
+    <section class="post-list" aria-label="Alumni updates">
+      {% if posts %}
+        {% for post in posts %}
+        <article class="post-entry">
+          <header class="post-author">
+            <span class="conversation-avatar" aria-hidden="true">{{ post.author_profile.user.name[:1]|upper }}</span>
+            <div>
+              <h2>{{ post.author_profile.user.name }}</h2>
+              {% if post.author_profile.headline %}<p>{{ post.author_profile.headline }}</p>{% endif %}
+              <time>{{ post.created_at.strftime("%b %d, %Y · %I:%M %p") }}</time>
+            </div>
+          </header>
+          <p class="post-body">{{ post.body }}</p>
+        </article>
+        {% endfor %}
+      {% else %}
+      <p class="feed-empty">No updates yet. Posts from alumni you follow will appear here.</p>
+      {% endif %}
+    </section>
+
+    <aside class="feed-community">
+      <p class="landing-kicker text-muted mb-1">Your community</p>
+      <h2 class="h5">Stay in the loop</h2>
+      <p>Follow alumni to see their ideas and updates in your feed.</p>
+      <a class="btn btn-outline-secondary" href="{{ url_for('alumni_directory_view') }}">Find alumni</a>
+    </aside>
+  </div>
+</main>
+{% endblock %}

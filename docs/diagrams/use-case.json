@@ -1,0 +1,31 @@
+{
+  "system": "Alumni App",
+  "actors": [
+    { "name": "User", "side": "left" },
+    { "name": "Alumni", "side": "right" }
+  ],
+  "use_cases": [
+    {
+      "name": "View Alumni Profile",
+      "actors": ["User"]
+    },
+    {
+      "name": "Follow Alumni",
+      "actors": ["Alumni"],
+      "includes": ["View Alumni Profile"]
+    },
+    {
+      "name": "Join Event",
+      "actors": ["Alumni"]
+    },
+    {
+      "name": "Message Alumni",
+      "actors": ["Alumni"],
+      "includes": ["View Alumni Profile"]
+    },
+    {
+      "name": "Make Post",
+      "actors": ["Alumni"]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Messages | AlumCircle{% endblock %}
+
+{% block subpage_content %}
+<main class="message-inbox container-fluid py-2">
+  <aside class="conversation-pane">
+    <header class="conversation-heading">
+      <h1 class="h4 mb-0">Inbox</h1>
+      <a class="new-message-button" href="{{ url_for('new_message_view') }}" aria-label="New message" title="New message">
+        <span class="material-symbols-outlined">edit_square</span>
+      </a>
+    </header>
+    {% if conversations %}
+      {% for item in conversations %}
+      <a class="conversation-link{% if selected_conversation and selected_conversation.conversation.id == item.conversation.id %} is-selected{% endif %}"
+         href="{{ url_for('messages_view') }}?conversation_id={{ item.conversation.id }}">
+        <span class="conversation-avatar" aria-hidden="true">{{ item.other_user.name[:1]|upper }}</span>
+        <span class="conversation-link-copy">
+          <strong>{{ item.other_user.name }}</strong>
+          {% if item.latest_message %}<span>{{ item.latest_message.body }}</span>{% endif %}
+        </span>
+        {% if item.latest_message %}<time>{{ item.latest_message.sent_at.strftime("%b %d") }}</time>{% endif %}
+      </a>
+      {% endfor %}
+    {% else %}
+    <p class="text-muted px-3 py-4">Your conversations will appear here.</p>
+    {% endif %}
+  </aside>
+
+  <section class="conversation-thread" aria-label="Conversation">
+    {% if selected_conversation %}
+    <header class="thread-heading">
+      <span class="conversation-avatar" aria-hidden="true">{{ selected_conversation.other_user.name[:1]|upper }}</span>
+      <h2 class="h5 mb-0">{{ selected_conversation.other_user.name }}</h2>
+    </header>
+    <div class="thread-messages">
+      {% for message in messages %}
+      <article class="message-line{% if message.sender_user_id == user.id %} is-sent{% endif %}">
+        <p>{{ message.body }}</p>
+        <time>{{ message.sent_at.strftime("%b %d, %I:%M %p") }}</time>
+      </article>
+      {% endfor %}
+    </div>
+    <form class="message-reply-form" method="post" action="{{ url_for('reply_to_conversation', conversation_id=selected_conversation.conversation.id) }}">
+      <label class="visually-hidden" for="reply-body">Write a message</label>
+      <textarea id="reply-body" name="body" rows="2" placeholder="Write a message" required></textarea>
+      <button class="btn btn-primary" type="submit">Send</button>
+    </form>
+    {% else %}
+    <div class="conversation-empty">
+      <h2 class="h5">Your alumni conversations</h2>
+      <p>Choose a conversation or start a new message.</p>
+      <a href="{{ url_for('new_message_view') }}">New message</a>
+    </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
