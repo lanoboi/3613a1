@@ -34,7 +34,7 @@ This draft keeps the actor boundary to the named Phase 1 flows: `User` can view 
 
 ## Model diagram
 
-This model represents the alumni network behind the named flows: a general `User` can view an alumni profile, while `Alumni` records carry follow, message, post, and event participation data. The Phase 4 revision adds the profile details, repeated experience records, and event metadata visible in the wireframes. The same person can act as both a viewer and a profile owner, so profile, follow, and message tables are tied to a shared account record.
+This model represents the alumni network behind the named flows: a general `User` can view an alumni profile, while `Alumni` records carry follow, message, post, and event participation data. The Phase 4 revision adds the profile details, repeated experience records, and event metadata visible in the wireframes. The same person can act as both a viewer and a profile owner, so profile, follow, and message tables are tied to a shared account record. A later Phase 5 addition (content moderation) adds the `is_banned` / `is_muted` / `muted_until` flags on `USER` and a `REPORT` table so users can flag posts and the admin account can review, remove, dismiss, ban, or mute.
 
 
 ```mermaid
@@ -46,6 +46,7 @@ erDiagram
     USER ||--o{ CONVERSATION : member_one
     USER ||--o{ CONVERSATION : member_two
     USER ||--o{ EVENT_ATTENDEE : registers
+    USER ||--o{ REPORT : files
 
     ALUMNI_PROFILE ||--o{ FOLLOW : receives
     ALUMNI_PROFILE ||--o{ POST : authors
@@ -56,12 +57,17 @@ erDiagram
 
     EVENT ||--o{ EVENT_ATTENDEE : has
 
+    POST ||--o{ REPORT : receives
+
     USER {
         int id PK
         string name
         string email
         string password_hash
         datetime created_at
+        bool is_banned
+        bool is_muted
+        datetime muted_until
     }
 
     ALUMNI_PROFILE {
@@ -117,6 +123,14 @@ erDiagram
         datetime created_at
     }
 
+    REPORT {
+        int id PK
+        int post_id FK
+        int reporter_user_id FK
+        string reason
+        datetime created_at
+    }
+
     EVENT {
         int id PK
         string title
@@ -136,7 +150,7 @@ erDiagram
     }
 ```
 
-Edge-case notes: a follow is modeled as a distinct relation because a user can follow many different alumni, and the same alumni profile can be followed by many users. Messaging is separate from the profile so the sender/recipient relationship can be recorded without collapsing the app into one generic “contact list.” Event participation is modeled as a join table to support multiple attendees per event and multiple events per alumni profile.
+Edge-case notes: a follow is modeled as a distinct relation because a user can follow many different alumni, and the same alumni profile can be followed by many users. Messaging is separate from the profile so the sender/recipient relationship can be recorded without collapsing the app into one generic “contact list.” Event participation is modeled as a join table to support multiple attendees per event and multiple events per alumni profile. `REPORT` is a distinct relation with a `(post_id, reporter_user_id)` unique constraint so one person cannot flag the same post twice; its optional `reason` supports the optional-reason report flow. `muted_until` is `NULL` for an indefinite mute and holds an expiry timestamp for a timed mute.
 
 ## Wireframes
 
@@ -371,6 +385,17 @@ note: calls `create_for_user` and redirects to the registered Home route.
 Implemented the Home composer and feed. Posts are ordered newest first and include the user's own alumni profile and followed alumni. Publishing requires an alumni profile; reactions and comments remain unmodeled. An isolated repository check confirmed follow-feed visibility and the alumni-only publish rule. Student confirmed the local workflow works.
 
 Supporting functionality (not a named workflow): signed-in users can complete or edit their alumni profile at `/profile/complete`. School, graduation year, and degree are required; professional details are optional. The Home prompt and **My Profile** navigation link provide entry points. Runtime checks confirmed create, update, and required-field validation; no additional workflow code-check was required.
+
+### Content moderation (admin) — supporting functionality, not a named workflow
+
+Sign in with `admin` / `adminpass` to land on `/admin`; no other account has these powers, and every moderation route is gated by the admin-only dependency.
+
+- **Report a post:** any signed-in non-author can flag a feed post with an optional reason (`POST /posts/{id}/report`). The `(post_id, reporter_user_id)` unique constraint blocks duplicate reports, and self-reports are refused in `ModerationService.report_post`.
+- **Reported-posts queue:** `/admin` lists each report with the post, author, reporter, reason, and timestamp. The admin can **remove the post** (also clears its reports), **dismiss the report**, or **ban the author**; all three confirm first via the shared `data-confirm` dialog.
+- **Member table:** `/admin` lists every member with an Active / Muted / Banned status badge plus **Ban/Unban** and a **Mute** duration (1h, 24h, 7d, 30d, indefinite) or **Unmute**. Admins cannot ban, mute, or moderate themselves or other admin accounts.
+- **Ban** refuses login with a clear message, and `get_current_user` rejects banned cookies so an existing session dies immediately. **Mute** allows browsing but blocks posting, following, joining events, messaging, and reporting; timed mutes expire automatically (`muted_until`) while indefinite mutes need an explicit unmute. A muted user sees a banner instead of the Home composer and the report control.
+- **Registration hardening:** `AuthService.register_user` explicitly rejects taken usernames/emails (case-insensitive) before insert; the `unique=True` constraints remain the database backstop.
+- **Schema:** additive `ALTER TABLE "user" ADD COLUMN` migration in `app/database.py` plus a new `report` table, so existing local and Render databases keep their data. Rules live in `ModerationService`, SQL in `ModerationRepository`, and routes stay thin (service call + flash + redirect).
 
 ## Deployed app
 

@@ -5,6 +5,7 @@ from app.dependencies.auth import AuthDep
 from app.dependencies.session import SessionDep
 from app.repositories.message import MessageRepository
 from app.services.message_service import MessageService
+from app.services.moderation_service import ModerationService
 from app.utilities.flash import flash
 from . import router, templates
 
@@ -74,6 +75,13 @@ async def send_new_message(
     profile_id: int = Form(),
     body: str = Form(),
 ):
+    mute_block = ModerationService.mute_message(user)
+    if mute_block:
+        flash(request, mute_block, "error")
+        return RedirectResponse(
+            url=request.url_for("new_message_view"),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
     message_service = MessageService(MessageRepository(db))
     try:
         conversation_id = message_service.send_to_profile(
@@ -99,6 +107,13 @@ async def send_message(
     db: SessionDep,
     body: str = Form(),
 ):
+    mute_block = ModerationService.mute_message(user)
+    if mute_block:
+        flash(request, mute_block, "error")
+        return RedirectResponse(
+            url=request.url_for("view_alumni_profile", profile_id=profile_id),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
     # student-build:code-check begin
     
     message_service = MessageService(MessageRepository(db))
@@ -124,6 +139,13 @@ async def reply_to_conversation(
     db: SessionDep,
     body: str = Form(),
 ):
+    mute_block = ModerationService.mute_message(user)
+    if mute_block:
+        flash(request, mute_block, "error")
+        return RedirectResponse(
+            url=request.url_for("messages_view"),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
     message_service = MessageService(MessageRepository(db))
     try:
         updated_conversation_id = message_service.reply_to_conversation(

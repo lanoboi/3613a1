@@ -33,11 +33,43 @@ engine = create_engine(
 )
 
 
+def upgrade_schema() -> None:
+    """Add columns introduced after a table was first created.
+
+    ``create_all`` only creates missing tables; it never alters existing ones.
+    This applies the additive moderation columns so existing local and Render
+    databases keep their data. No-op when the columns already exist.
+    """
+    from sqlalchemy import inspect, text
+
+    additions = {
+        "user": {
+            "is_banned": 'ALTER TABLE "user" ADD COLUMN is_banned BOOLEAN DEFAULT FALSE NOT NULL',
+            "is_muted": 'ALTER TABLE "user" ADD COLUMN is_muted BOOLEAN DEFAULT FALSE NOT NULL',
+            "muted_until": 'ALTER TABLE "user" ADD COLUMN muted_until TIMESTAMP',
+        },
+    }
+
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+    for table, columns in additions.items():
+        if table not in existing_tables:
+            continue
+        existing_columns = {column["name"] for column in inspector.get_columns(table)}
+        for name, ddl in columns.items():
+            if name in existing_columns:
+                continue
+            logger.info("Upgrading schema: adding %s.%s", table, name)
+            with engine.begin() as connection:
+                connection.execute(text(ddl))
+
+
 def create_db_and_tables() -> None:
     # Ensure model modules are imported so tables are registered on metadata.
     import app.models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
+    upgrade_schema()
 
 
 def drop_all() -> None:

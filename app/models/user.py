@@ -14,6 +14,9 @@ class UserBase(SQLModel,):
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    is_banned: bool = Field(default=False)
+    is_muted: bool = Field(default=False)
+    muted_until: Optional[datetime] = Field(default=None)
 
 
 class Experience(SQLModel, table=True):
@@ -124,3 +127,20 @@ class Post(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     # student-build:code-check end
     author_profile: AlumniProfile = Relationship()
+
+
+class Report(SQLModel, table=True):
+    __tablename__ = "report"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    post_id: int = Field(foreign_key="post.id", index=True)
+    reporter_user_id: int = Field(foreign_key="user.id", index=True)
+    reason: str = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        UniqueConstraint("post_id", "reporter_user_id", name="uq_report_post_reporter"),
+    )
+
+    post: Post = Relationship()
+    reporter: User = Relationship()

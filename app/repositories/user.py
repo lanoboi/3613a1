@@ -41,6 +41,13 @@ class UserRepository:
     def get_by_username(self, username: str) -> Optional[User]:
         return self.db.exec(select(User).where(User.username == username)).one_or_none()
 
+    def username_or_email_exists(self, username: str, email: str) -> bool:
+        statement = select(User).where(
+            (func.lower(User.username) == username.lower())
+            | (func.lower(User.email) == email.lower())
+        )
+        return self.db.exec(statement).first() is not None
+
     def get_by_id(self, user_id: int) -> Optional[User]:
         return self.db.get(User, user_id)
 

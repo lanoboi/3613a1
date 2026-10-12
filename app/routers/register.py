@@ -29,6 +29,9 @@ def signup_user(request:Request, db:SessionDep,
         user = auth_service.register_user(name, username, email, password)
         flash(request, "Registration completed! Sign in now!")
         return RedirectResponse(url=request.url_for("login_view"), status_code=status.HTTP_303_SEE_OTHER)
+    except ValueError as e:
+        flash(request, str(e), "danger")
+        return RedirectResponse(url=request.url_for("register_view"), status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:
         flash(request, "Username or email already exists", "danger")
         return RedirectResponse(url=request.url_for("register_view"), status_code=status.HTTP_303_SEE_OTHER)

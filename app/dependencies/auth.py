@@ -6,6 +6,7 @@ from app.config import get_settings
 from app.models.user import User
 from app.dependencies.session import SessionDep
 from app.repositories.user import UserRepository
+from app.services.moderation_service import ModerationService
 
 async def get_current_user(request:Request, db:SessionDep)->User:
     credentials_exception = HTTPException(
@@ -28,6 +29,9 @@ async def get_current_user(request:Request, db:SessionDep)->User:
     user = repo.get_by_id(user_id)
 
     if user is None:
+        raise credentials_exception
+    if user.is_banned:
+        # A banned account loses access even with a still-valid cookie.
         raise credentials_exception
     return user
 

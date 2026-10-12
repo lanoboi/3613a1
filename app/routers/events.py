@@ -5,6 +5,7 @@ from app.dependencies.auth import AuthDep
 from app.dependencies.session import SessionDep
 from app.repositories.event import EventRepository
 from app.services.event_service import EventService
+from app.services.moderation_service import ModerationService
 from app.utilities.flash import flash
 from . import router, templates
 
@@ -32,6 +33,14 @@ async def toggle_event_attendance(
     user: AuthDep,
     db: SessionDep,
 ):
+    # Muted users may browse but not act; block before the original snippet.
+    mute_block = ModerationService.mute_message(user)
+    if mute_block:
+        flash(request, mute_block, "error")
+        return RedirectResponse(
+            url=request.url_for("events_view"),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
     # student-build:code-check begin
     event_service = EventService(EventRepository(db))
     try:

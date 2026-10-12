@@ -10,7 +10,15 @@
     </div>
   </header>
 
-  {% if can_post %}
+  {% if mute_message %}
+  <section class="feed-muted-note" role="status">
+    <span class="material-symbols-outlined" aria-hidden="true">volume_off</span>
+    <div>
+      <h2 class="h6 mb-1">Your account is muted</h2>
+      <p class="mb-0">{{ mute_message }}</p>
+    </div>
+  </section>
+  {% elif can_post %}
   <form class="post-composer" method="post" action="{{ url_for('create_post') }}">
     <label class="visually-hidden" for="post-body">Share a post</label>
     <textarea id="post-body" name="body" rows="2" placeholder="Share an update with your alumni community..." required></textarea>
@@ -40,6 +48,21 @@
             </div>
           </header>
           <p class="post-body">{{ post.body }}</p>
+          {% if not mute_message and post.author_profile.user_id != user.id %}
+          <details class="post-report">
+            <summary class="post-report-toggle">
+              <span class="material-symbols-outlined" aria-hidden="true">flag</span>
+              Report post
+            </summary>
+            <form method="post" action="{{ url_for('report_post', post_id=post.id) }}">
+              <label class="form-label" for="report-reason-{{ post.id }}">Reason (optional)</label>
+              <textarea class="form-control" id="report-reason-{{ post.id }}" name="reason" rows="2"
+                        maxlength="500" placeholder="Tell the moderators what's wrong with this post..."></textarea>
+              <button class="btn btn-outline-danger btn-sm mt-2" type="submit"
+                      data-confirm="Send this report to the moderators?">Send report</button>
+            </form>
+          </details>
+          {% endif %}
         </article>
         {% endfor %}
       {% else %}

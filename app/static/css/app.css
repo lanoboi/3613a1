@@ -1207,3 +1207,233 @@ h1, h2, h3, h4, h5, h6,
     font-size: 1.25rem;
   }
 }
+
+/* —— Content moderation (admin) —— */
+.feed-muted-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid color-mix(in srgb, #b7791f 35%, transparent);
+  border-radius: var(--brand-radius-lg);
+  background: color-mix(in srgb, #b7791f 10%, var(--brand-card));
+  box-shadow: var(--brand-shadow);
+}
+
+.feed-muted-note .material-symbols-outlined {
+  color: #b7791f;
+}
+
+.feed-muted-note p {
+  margin: 0;
+  color: var(--brand-muted);
+}
+
+.post-report {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--brand-line);
+}
+
+.post-report-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--brand-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  list-style: none;
+  transition: color 0.15s ease;
+}
+
+.post-report-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.post-report-toggle:hover {
+  color: var(--brand-danger);
+}
+
+.post-report-toggle .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.post-report form {
+  margin-top: 0.6rem;
+}
+
+.post-report .form-label {
+  font-size: 0.82rem;
+  color: var(--brand-muted);
+}
+
+.admin-page {
+  max-width: 62rem;
+}
+
+.admin-section {
+  margin-top: 1.2rem;
+  padding: 1.2rem;
+  border: 1px solid var(--brand-line);
+  border-radius: var(--brand-radius-lg);
+  background: var(--brand-card);
+  box-shadow: var(--brand-shadow);
+}
+
+.admin-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-count {
+  color: var(--brand-muted);
+  font-size: 0.85rem;
+}
+
+.admin-empty {
+  margin: 0;
+  padding: 1.25rem 0.25rem;
+  color: var(--brand-muted);
+}
+
+.report-list {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--brand-line);
+  border-radius: var(--brand-radius-lg);
+  background: color-mix(in srgb, var(--brand-surface) 55%, var(--brand-card));
+}
+
+.report-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  color: var(--brand-muted);
+  font-size: 0.82rem;
+}
+
+.report-reason {
+  margin: 0.5rem 0 0.7rem;
+  font-weight: 500;
+}
+
+.report-reason-empty {
+  color: var(--brand-muted);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.report-post {
+  box-shadow: none;
+}
+
+.report-post:hover {
+  transform: none;
+}
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.report-actions form {
+  margin: 0;
+}
+
+.admin-member-name {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-member-name .conversation-avatar {
+  width: 2.1rem;
+  font-size: 0.85rem;
+}
+
+.admin-member-name .text-muted {
+  display: block;
+  font-size: 0.82rem;
+}
+
+.admin-role,
+.admin-status {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-role {
+  background: color-mix(in srgb, var(--brand-accent) 12%, transparent);
+  color: var(--brand-accent);
+}
+
+.admin-role.role-admin {
+  background: color-mix(in srgb, #6b21a8 14%, transparent);
+  color: #6b21a8;
+}
+
+.admin-status.status-active {
+  background: color-mix(in srgb, #15803d 14%, transparent);
+  color: #15803d;
+}
+
+.admin-status.status-muted {
+  background: color-mix(in srgb, #b7791f 16%, transparent);
+  color: #b7791f;
+}
+
+.admin-status.status-banned {
+  background: color-mix(in srgb, var(--brand-danger) 15%, transparent);
+  color: var(--brand-danger);
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.admin-actions form {
+  margin: 0;
+}
+
+.admin-mute-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.admin-mute-form .form-select {
+  width: auto;
+  min-width: 7.5rem;
+}
+
+@media (max-width: 700px) {
+  .admin-actions {
+    justify-content: flex-start;
+  }
+
+  .report-actions form {
+    flex: 1 1 auto;
+  }
+
+  .admin-mute-form {
+    flex-wrap: wrap;
+  }
+}

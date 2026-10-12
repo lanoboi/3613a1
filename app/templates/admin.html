@@ -1,9 +1,145 @@
 {% extends "authenticated-base.html" %}
-{% block title %}Admin{% endblock %}
+{% block title %}Admin | AlumCircle{% endblock %}
 
 {% block subpage_content %}
-<div class="container-fluid py-2">
-  <h1 class="h4 mb-2">Admin</h1>
-  <p class="text-muted mb-0">Admin workflow screens replace this shell in Phase 5 implement.</p>
-</div>
+<main class="admin-page container-fluid py-2">
+  <header class="feed-heading">
+    <div>
+      <p class="landing-kicker text-muted mb-1">Administration</p>
+      <h1 class="h3 mb-0">Moderation</h1>
+    </div>
+  </header>
+
+  <section class="admin-section" aria-label="Reported posts">
+    <div class="admin-section-head">
+      <h2 class="h5 mb-0">Reported posts</h2>
+      <span class="admin-count">{{ reports|length }} open</span>
+    </div>
+
+    {% if reports %}
+    <ul class="report-list">
+      {% for report in reports %}
+      <li class="report-card">
+        <div class="report-meta">
+          <span class="report-when">{{ report.created_at.strftime("%b %d, %Y · %I:%M %p") }}</span>
+          <span class="report-by">Reported by <strong>{{ report.reporter.username }}</strong></span>
+        </div>
+        {% if report.reason %}
+        <p class="report-reason">“{{ report.reason }}”</p>
+        {% else %}
+        <p class="report-reason report-reason-empty">No reason given.</p>
+        {% endif %}
+
+        <article class="post-entry report-post">
+          <header class="post-author">
+            <span class="conversation-avatar" aria-hidden="true">{{ report.post.author_profile.user.name[:1]|upper }}</span>
+            <div>
+              <h3 class="h6 mb-0">
+                <a class="post-author-link" href="{{ url_for('view_alumni_profile', profile_id=report.post.author_profile.id) }}">{{ report.post.author_profile.user.name }}</a>
+              </h3>
+              {% if report.post.author_profile.headline %}<p class="mb-0">{{ report.post.author_profile.headline }}</p>{% endif %}
+              <time>{{ report.post.created_at.strftime("%b %d, %Y · %I:%M %p") }}</time>
+            </div>
+          </header>
+          <p class="post-body">{{ report.post.body }}</p>
+        </article>
+
+        <div class="report-actions">
+          <form method="post" action="{{ url_for('admin_remove_post', post_id=report.post_id) }}">
+            <button class="btn btn-danger btn-sm" type="submit"
+                    data-confirm="Remove this post for everyone?">Remove post</button>
+          </form>
+          {% if report.post.author_profile.user_id != user.id and report.post.author_profile.user.role != 'admin' %}
+          <form method="post" action="{{ url_for('admin_ban_user', target_user_id=report.post.author_profile.user_id) }}">
+            <button class="btn btn-outline-danger btn-sm" type="submit"
+                    data-confirm="Ban {{ report.post.author_profile.user.username }}? They will not be able to sign in.">Ban author</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('admin_dismiss_report', report_id=report.id) }}">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Dismiss report</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="admin-empty">No open reports. Anything users report will appear here.</p>
+    {% endif %}
+  </section>
+
+  <section class="admin-section" aria-label="Members">
+    <div class="admin-section-head">
+      <h2 class="h5 mb-0">Members</h2>
+      <span class="admin-count">{{ members|length }} total</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table admin-members align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Member</th>
+            <th scope="col">Email</th>
+            <th scope="col">Role</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in members %}
+          {% set member = row.member %}
+          <tr>
+            <td>
+              <div class="admin-member-name">
+                <span class="conversation-avatar" aria-hidden="true">{{ member.name[:1]|upper }}</span>
+                <div>
+                  <strong>{{ member.name }}</strong>
+                  <span class="text-muted">@{{ member.username }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="text-muted">{{ member.email }}</td>
+            <td><span class="admin-role role-{{ member.role or 'user' }}">{{ member.role or 'member' }}</span></td>
+            <td><span class="admin-status status-{{ row.status_kind }}">{{ row.status_label }}</span></td>
+            <td>
+              {% if member.id != user.id and member.role != 'admin' %}
+              <div class="admin-actions">
+                {% if member.is_banned %}
+                <form method="post" action="{{ url_for('admin_unban_user', target_user_id=member.id) }}">
+                  <button class="btn btn-outline-secondary btn-sm" type="submit">Unban</button>
+                </form>
+                {% else %}
+                <form method="post" action="{{ url_for('admin_ban_user', target_user_id=member.id) }}">
+                  <button class="btn btn-outline-danger btn-sm" type="submit"
+                          data-confirm="Ban {{ member.username }}? They will not be able to sign in.">Ban</button>
+                </form>
+                {% endif %}
+
+                {% if member.is_muted %}
+                <form method="post" action="{{ url_for('admin_unmute_user', target_user_id=member.id) }}">
+                  <button class="btn btn-outline-secondary btn-sm" type="submit">Unmute</button>
+                </form>
+                {% else %}
+                <form method="post" action="{{ url_for('admin_mute_user', target_user_id=member.id) }}" class="admin-mute-form">
+                  <label class="visually-hidden" for="mute-duration-{{ member.id }}">Mute duration</label>
+                  <select class="form-select form-select-sm" id="mute-duration-{{ member.id }}" name="duration">
+                    {% for value, label in mute_options %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-outline-warning btn-sm" type="submit"
+                          data-confirm="Mute {{ member.username }}? They can browse but not act.">Mute</button>
+                </form>
+                {% endif %}
+              </div>
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
 {% endblock %}

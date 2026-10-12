@@ -4,6 +4,7 @@ from app.dependencies import SessionDep
 from app.dependencies.auth import AuthDep
 from . import api_router, router, templates
 from app.services.user_service import UserService
+from app.services.moderation_service import ModerationService
 from app.repositories.user import UserRepository
 from app.utilities.flash import flash
 from app.schemas import UserResponse
@@ -141,6 +142,14 @@ async def toggle_alumni_follow(
     user: AuthDep,
     db: SessionDep,
 ):
+    # Muted users may browse but not act; block before the original snippet.
+    mute_block = ModerationService.mute_message(user)
+    if mute_block:
+        flash(request, mute_block, "error")
+        return RedirectResponse(
+            url=request.url_for("view_alumni_profile", profile_id=profile_id),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
     # student-build:code-check begin
     user_repo = UserRepository(db)
     user_service = UserService(user_repo)

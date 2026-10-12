@@ -25,7 +25,14 @@ async def login_action_ajax(
 ):
     user_repo = UserRepository(db)
     auth_service = AuthService(user_repo)
-    access_token = auth_service.authenticate_user(username, password)
+    try:
+        access_token = auth_service.authenticate_user(username, password)
+    except ValueError as exc:
+        flash(request, str(exc), "danger")
+        return RedirectResponse(
+            url=request.url_for("login_view"),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
     if not access_token:
         flash(request, "Incorrect username or password", "danger")
         return RedirectResponse(
