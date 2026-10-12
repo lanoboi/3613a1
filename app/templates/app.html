@@ -30,9 +30,11 @@
         {% for post in posts %}
         <article class="post-entry">
           <header class="post-author">
-            <span class="conversation-avatar" aria-hidden="true">{{ post.author_profile.user.name[:1]|upper }}</span>
+            <a class="post-avatar-link" href="{{ url_for('view_alumni_profile', profile_id=post.author_profile.id) }}" aria-label="View {{ post.author_profile.user.name }}'s profile">
+              <span class="conversation-avatar" aria-hidden="true">{{ post.author_profile.user.name[:1]|upper }}</span>
+            </a>
             <div>
-              <h2>{{ post.author_profile.user.name }}</h2>
+              <h2><a class="post-author-link" href="{{ url_for('view_alumni_profile', profile_id=post.author_profile.id) }}">{{ post.author_profile.user.name }}</a></h2>
               {% if post.author_profile.headline %}<p>{{ post.author_profile.headline }}</p>{% endif %}
               <time>{{ post.created_at.strftime("%b %d, %Y · %I:%M %p") }}</time>
             </div>

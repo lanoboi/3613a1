@@ -36,15 +36,22 @@ async def alumni_directory_view(
 
 @router.get("/profile", response_class=HTMLResponse, name="my_alumni_profile_view")
 async def my_alumni_profile_view(request: Request, user: AuthDep, db: SessionDep):
-    profile = UserService(UserRepository(db)).get_alumni_profile_by_user_id(user.id)
+    user_service = UserService(UserRepository(db))
+    profile = user_service.get_alumni_profile_by_user_id(user.id)
     if profile is None:
         return RedirectResponse(
             url=request.url_for("alumni_profile_form_view"),
             status_code=status.HTTP_303_SEE_OTHER,
         )
-    return RedirectResponse(
-        url=request.url_for("view_alumni_profile", profile_id=profile.id),
-        status_code=status.HTTP_303_SEE_OTHER,
+    return templates.TemplateResponse(
+        request,
+        "alumni_profile.html",
+        {
+            "user": user,
+            "profile": profile,
+            "is_following": False,
+            "own_profile": True,
+        },
     )
 
 
@@ -113,7 +120,8 @@ async def view_alumni_profile(
     if not profile:
         flash(request, "Alumni profile not found.", "error")
         return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-    is_following = user_service.is_following(user.id, profile_id)
+    own_profile = profile.user_id == user.id
+    is_following = False if own_profile else user_service.is_following(user.id, profile_id)
     return templates.TemplateResponse(
         request,
         "alumni_profile.html",
@@ -121,6 +129,7 @@ async def view_alumni_profile(
             "user": user,
             "profile": profile,
             "is_following": is_following,
+            "own_profile": own_profile,
         })
     # student-build:code-check end
 
@@ -137,8 +146,8 @@ async def toggle_alumni_follow(
     user_service = UserService(user_repo)
     try:
         is_following = user_service.toggle_follow(user.id, profile_id)
-    except ValueError:
-        flash(request, "Alumni profile not found.", "error")
+    except ValueError as exc:
+        flash(request, str(exc), "error")
     else:
         message = "You are now following this alum." if is_following else "You unfollowed this alum."
         flash(request, message, "success")

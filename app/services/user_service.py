@@ -40,5 +40,10 @@ class UserService:
         return self.user_repo.is_following(follower_user_id, followed_profile_id)
 
     def toggle_follow(self, follower_user_id: int, followed_profile_id: int) -> bool:
+        followed_profile = self.get_alumni_profile_by_id(followed_profile_id)
+        if followed_profile is None:
+            raise ValueError("Alumni profile not found.")
+        if followed_profile.user_id == follower_user_id:
+            raise ValueError("You cannot follow your own profile.")
         return self.user_repo.toggle_follow(follower_user_id, followed_profile_id)
     

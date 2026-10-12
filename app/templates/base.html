@@ -14,6 +14,8 @@
     <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,100,1,200"
         rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+        rel="stylesheet" />
     <link href="{{ url_for('static', path='css/app.css')}}" rel="stylesheet">
 
     {% block external_css %}{% endblock %}
@@ -32,6 +34,68 @@
             <div class="toast-body" id="toastContent"></div>
         </div>
     </div>
+
+    <div class="confirm-backdrop" id="confirmBackdrop" hidden>
+        <div class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+            <h2 class="confirm-title" id="confirmTitle">Are you sure?</h2>
+            <p class="confirm-message" id="confirmMessage"></p>
+            <div class="confirm-actions">
+                <button type="button" class="btn-landing btn-landing-ghost" id="confirmCancel">Cancel</button>
+                <button type="button" class="btn-landing btn-landing-primary" id="confirmOk">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Any element with data-confirm="message" asks the user before acting.
+        (function () {
+            const backdrop = document.getElementById("confirmBackdrop");
+            const messageEl = document.getElementById("confirmMessage");
+            const okBtn = document.getElementById("confirmOk");
+            const cancelBtn = document.getElementById("confirmCancel");
+            let pending = null;
+
+            function openDialog(el) {
+                pending = el;
+                messageEl.textContent = el.getAttribute("data-confirm");
+                backdrop.hidden = false;
+                okBtn.focus();
+            }
+
+            function closeDialog() {
+                backdrop.hidden = true;
+                pending = null;
+            }
+
+            cancelBtn.addEventListener("click", closeDialog);
+            backdrop.addEventListener("click", function (event) {
+                if (event.target === backdrop) closeDialog();
+            });
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape" && !backdrop.hidden) closeDialog();
+            });
+
+            okBtn.addEventListener("click", function () {
+                const el = pending;
+                closeDialog();
+                if (!el) return;
+                if (el.tagName === "FORM") {
+                    el.submit();
+                } else if (el.tagName === "BUTTON" && el.form) {
+                    el.form.submit();
+                } else if (el.tagName === "A") {
+                    window.location.assign(el.href);
+                }
+            });
+
+            document.addEventListener("click", function (event) {
+                const el = event.target.closest("[data-confirm]");
+                if (!el) return;
+                event.preventDefault();
+                openDialog(el);
+            });
+        })();
+    </script>
 
     {% block external_js %}{% endblock %}
 </body>

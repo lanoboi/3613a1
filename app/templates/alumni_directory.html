@@ -7,7 +7,7 @@
     <h1 class="h3 mb-0">Alumni directory</h1>
     <form class="directory-search d-flex gap-2" method="get" action="{{ url_for('alumni_directory_view') }}">
       <label class="visually-hidden" for="alumni-search">Search alumni</label>
-      <input class="form-control" type="search" id="alumni-search" name="q" value="{{ query }}" placeholder="Name, school, industry, or role">
+      <input class="form-control" type="search" id="alumni-search" name="q" value="{{ query }}" placeholder="Name, industry, or role">
       <button class="btn btn-primary" type="submit">Search</button>
     </form>
   </header>
